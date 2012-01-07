@@ -29,6 +29,7 @@ import sys
 import subprocess
 import string
 import time
+import collections
 from datetime import datetime
 from datetime import timedelta
 
@@ -50,24 +51,38 @@ def main():
         print "python cp_wrapper -FLAGS src dest"
         print "Flags must be all without spaces between them..."
 
+    # start cp command in background and pass arguments on
     command = "cp " + flags + " " + src + " " + dest + " &"
-#    print command
     os.system(command)
 
+    # get size if source file
     srcsize = os.stat(src)
 
+    # get pid of cp process so it can be tracked later
     proc1 = subprocess.Popen(["ps -Af | grep -m1 \"" + command + "\" | awk '{print $2}'"], stdout=subprocess.PIPE, shell=True)
     (out, err) = proc1.communicate()
     # TODO: THIS IS NOT GOOD! WHY IS THE PID ALWAYS OFF BY ONE???
     pid = int(out) - 1
-#    print "pid: " + str(pid)
 
+    # try/except to catch ^C Keyboard Interrupt
     try:
         keepgoing = True
         # TODO: destsize should be initialized with an os.stat object with 0 bytes size. Quick Hack: use /dev/zero instead
         destsize = os.stat("/dev/zero")
+
+        # initialize the size and time ring buffer to calculate speed and ETA
         cptime = datetime.now()
+        sizehistory = collections.deque(maxlen=8)
+        for i in range(0, sizehistory.maxlen):
+            sizehistory.append(0L)
+        timehistory = collections.deque(maxlen=8)
+        for i in range(0, timehistory.maxlen):
+            timehistory.append(cptime)
+
+        # while loop until cp process is done
         while (keepgoing):
+
+            # check if cp process is still there. This could probably be improved
             cmd = "ps -p " + string.strip(str(pid),"\n") + " | wc -l"
             proc2 = subprocess.Popen([cmd], stdout=subprocess.PIPE, shell=True)
             (temp, err) = proc2.communicate()
@@ -75,26 +90,30 @@ def main():
             if (temp != 2):
                 keepgoing = False
 
-            # calc values and output infos
-            destsizeold = destsize
+            # calc current size of destination an current time
             destsize = os.stat(dest)
-            cptimeold = cptime
             cptime = datetime.now()
+            # store size and time in circular buffer for current speed and ETA 
+            sizehistory.append(destsize.st_size)
+            timehistory.append(cptime)
 
-            # TODO: calc est. time
-#            temp1 = srcsize.st_size + destsize.st_size
-#            temp2 = destsize.st_size + destsizeold.st_size
-#            temp3 = (cptime - cptimeold).total_seconds()
-#            if (temp1 == 0):
-#                temp1 = LONG_MIN
-#            if (temp2 == 0):
-#                temp2 = LONG_MIN
-#            if (temp3 == 0):
-#                temp3 = LONG_MIN
-#            temp4 = (temp1 / temp2) * temp3            
+            # calculate current speed
+            temp3 = 0
+            for i in range(0, sizehistory.maxlen - 1):
+                temp1 = (sizehistory[i+1] - sizehistory[i]) / 1000000 
+                temp2 = timehistory[i+1] - timehistory[i]
+                if (temp2.total_seconds() == 0):
+                    temp3 = 0
+                else:
+                    temp3 = temp3 + (temp1/temp2.total_seconds())
+            temp3 = temp3 / (sizehistory.maxlen - 1)
 
+            # TODO: calc est. time         
+
+            # calculate current percentage
             percent = (destsize.st_size * 100) / srcsize.st_size
 
+            # build the output string
             out = "["
             for x in range(0, (percent / 2)):
                 out += "#"
@@ -102,17 +121,17 @@ def main():
                 out += "-"
 
             out += "] "
+            out += str(percent).rjust(3) + " %  " + str(int(temp3)).rjust(4) + " Mb/s"
+            # Print the output string. It should always be printed on one line, but for some reason it's to slow -.-
+            print out
+#            print '{0}\r'.format(out),
 
-            formattedpercent = "%03s" % (percent)
-#            print out + str(formattedpercent) + " %  " + str(temp4)
-            print out + str(formattedpercent) + " %  "
-
-            # sleep
+            # sleep until next check
+            # TODO: check if sleep() is to inaccurate, since there are these weird stutters
             time.sleep(0.25)
+    # catch ^C Exception and make sure the cp process is also killed. Otherwise it would be ghosting around in the background
     except KeyboardInterrupt:
         os.system("kill " + str(pid))
         sys.exit(0)
 
-#print "Start!"
 main()
-#print "Done!"
