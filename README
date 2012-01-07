@@ -5,10 +5,6 @@ This repo just contains some small scripts and stuff...
 
 All the parts of this repository are licensed under the LGPLv3 (http://www.gnu.org/licenses/lgpl-3.0)
 
+Parts of this little collection:
+- cp_wrapper
 
-==========
-cp_wrapper
-=====
-little python script that adds a progress bar to the cp command
-
-currently only working with python 2.x
