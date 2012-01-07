@@ -1,0 +1,6 @@
+==========
+cp_wrapper
+=====
+little python script that adds a progress bar to the cp command
+
+currently only working with python 2.x
