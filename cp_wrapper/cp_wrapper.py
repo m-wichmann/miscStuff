@@ -98,17 +98,25 @@ def main():
             timehistory.append(cptime)
 
             # calculate current speed
-            temp3 = 0
+            copyspeed = 0
             for i in range(0, sizehistory.maxlen - 1):
                 temp1 = (sizehistory[i+1] - sizehistory[i]) / 1000000 
                 temp2 = timehistory[i+1] - timehistory[i]
                 if (temp2.total_seconds() == 0):
-                    temp3 = 0
+                    copyspeed = 0
                 else:
-                    temp3 = temp3 + (temp1/temp2.total_seconds())
-            temp3 = temp3 / (sizehistory.maxlen - 1)
+                    copyspeed = copyspeed + (temp1/temp2.total_seconds())
+            copyspeed = copyspeed / (sizehistory.maxlen - 1)
 
-            # TODO: calc est. time         
+            # calc est. time
+            # TODO: make this algorithm a little bit more stable, so the ETA is more accurate
+            sizeremaining = (srcsize.st_size - destsize.st_size) / 1000000
+            ETA = 0
+            if (copyspeed == 0):
+                ETA = 0
+            else:
+                ETA = sizeremaining / copyspeed
+            ETA = timedelta(seconds=int(ETA))
 
             # calculate current percentage
             percent = (destsize.st_size * 100) / srcsize.st_size
@@ -121,7 +129,8 @@ def main():
                 out += "-"
 
             out += "] "
-            out += str(percent).rjust(3) + " %  " + str(int(temp3)).rjust(4) + " Mb/s"
+            out += str(percent).rjust(3) + " % " + str(int(copyspeed)).rjust(3) + " Mb/s  " + str(ETA).rjust(3) + " ETA"
+
             # Print the output string. It should always be printed on one line, but for some reason it's to slow -.-
             print out
 #            print '{0}\r'.format(out),
