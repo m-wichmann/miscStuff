@@ -25,6 +25,7 @@
 # - parse flags dynamically
 
 import os
+import os.path
 import sys
 import subprocess
 import string
@@ -79,15 +80,13 @@ def main():
         for i in range(0, timehistory.maxlen):
             timehistory.append(cptime)
 
+        pid = string.strip(str(pid),"\n")
+
         # while loop until cp process is done
         while (keepgoing):
 
-            # check if cp process is still there. This could probably be improved
-            cmd = "ps -p " + string.strip(str(pid),"\n") + " | wc -l"
-            proc2 = subprocess.Popen([cmd], stdout=subprocess.PIPE, shell=True)
-            (temp, err) = proc2.communicate()
-            temp = int(temp)
-            if (temp != 2):
+            # check if cp process is still there
+            if (not os.path.exists("/proc/" + pid)):
                 keepgoing = False
 
             # calc current size of destination an current time
@@ -137,7 +136,8 @@ def main():
 
             # sleep until next check
             # TODO: check if sleep() is to inaccurate, since there are these weird stutters
-            time.sleep(0.25)
+            time.sleep(0.1)
+
     # catch ^C Exception and make sure the cp process is also killed. Otherwise it would be ghosting around in the background
     except KeyboardInterrupt:
         os.system("kill " + str(pid))
