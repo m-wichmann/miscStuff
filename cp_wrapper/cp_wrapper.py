@@ -68,7 +68,7 @@ def main():
     # try/except to catch ^C Keyboard Interrupt
     try:
         keepgoing = True
-        # TODO: destsize should be initialized with an os.stat object with 0 bytes size. Quick Hack: use /dev/zero instead
+        # TODO: destsize should be initialized with an os.stat object with 0 bytes size. Quick Hack: use /dev/zero instead. Probably not working with Windows -.-
         destsize = os.stat("/dev/zero")
 
         # initialize the size and time ring buffer to calculate speed and ETA
