@@ -84,63 +84,72 @@ def main():
 
         # while loop until cp process is done
         while (keepgoing):
-
-            # check if cp process is still there
-            if (not os.path.exists("/proc/" + pid)):
-                keepgoing = False
-
-            # calc current size of destination an current time
-            destsize = os.stat(dest)
-            cptime = datetime.now()
-            # store size and time in circular buffer for current speed and ETA 
-            sizehistory.append(destsize.st_size)
-            timehistory.append(cptime)
-
-            # calculate current speed
-            copyspeed = 0
-            for i in range(0, sizehistory.maxlen - 1):
-                temp1 = (sizehistory[i+1] - sizehistory[i]) / 1000000 
-                temp2 = timehistory[i+1] - timehistory[i]
-                if (temp2.total_seconds() == 0):
-                    copyspeed = 0
-                else:
-                    copyspeed = copyspeed + (temp1/temp2.total_seconds())
-            copyspeed = copyspeed / (sizehistory.maxlen - 1)
-
-            # calc est. time
-            # TODO: make this algorithm a little bit more stable, so the ETA is more accurate
-            sizeremaining = (srcsize.st_size - destsize.st_size) / 1000000
-            ETA = 0
-            if (copyspeed == 0):
-                ETA = 0
-            else:
-                ETA = sizeremaining / copyspeed
-            ETA = timedelta(seconds=int(ETA))
-
-            # calculate current percentage
-            percent = (destsize.st_size * 100) / srcsize.st_size
-
-            # build the output string
-            out = "["
-            for x in range(0, (percent / 2)):
-                out += "#"
-            for x in range((percent / 2), 50):
-                out += "-"
-
-            out += "] "
-            out += str(percent).rjust(3) + " % " + str(int(copyspeed)).rjust(3) + " Mb/s  " + str(ETA).rjust(3) + " ETA"
-
-            # Print the output string. It should always be printed on one line, but for some reason it's to slow -.-
-            print out
-#            print '{0}\r'.format(out),
-
+            func()
             # sleep until next check
             # TODO: check if sleep() is to inaccurate, since there are these weird stutters
             time.sleep(0.1)
+
+
 
     # catch ^C Exception and make sure the cp process is also killed. Otherwise it would be ghosting around in the background
     except KeyboardInterrupt:
         os.system("kill " + str(pid))
         sys.exit(0)
+
+
+
+
+def func():
+    # check if cp process is still there
+    if (not os.path.exists("/proc/" + pid)):
+        keepgoing = False
+
+    # calc current size of destination an current time
+    destsize = os.stat(dest)
+    cptime = datetime.now()
+    # store size and time in circular buffer for current speed and ETA 
+    sizehistory.append(destsize.st_size)
+    timehistory.append(cptime)
+
+    # calculate current speed
+    copyspeed = 0
+    for i in range(0, sizehistory.maxlen - 1):
+        temp1 = (sizehistory[i+1] - sizehistory[i]) / 1000000 
+        temp2 = timehistory[i+1] - timehistory[i]
+        if (temp2.total_seconds() == 0):
+            copyspeed = 0
+        else:
+            copyspeed = copyspeed + (temp1/temp2.total_seconds())
+    copyspeed = copyspeed / (sizehistory.maxlen - 1)
+
+    # calc est. time
+    # TODO: make this algorithm a little bit more stable, so the ETA is more accurate
+    sizeremaining = (srcsize.st_size - destsize.st_size) / 1000000
+    ETA = 0
+    if (copyspeed == 0):
+        ETA = 0
+    else:
+        ETA = sizeremaining / copyspeed
+    ETA = timedelta(seconds=int(ETA))
+
+    # calculate current percentage
+    percent = (destsize.st_size * 100) / srcsize.st_size
+
+    # build the output string
+    out = "["
+    for x in range(0, (percent / 2)):
+        out += "#"
+    for x in range((percent / 2), 50):
+        out += "-"
+
+    out += "] "
+    out += str(percent).rjust(3) + " % " + str(int(copyspeed)).rjust(3) + " Mb/s  " + str(ETA).rjust(3) + " ETA"
+
+    # Print the output string. It should always be printed on one line, but for some reason it's to slow -.-
+    print out
+#            print '{0}\r'.format(out),
+
+
+
 
 main()
