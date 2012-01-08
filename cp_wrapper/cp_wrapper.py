@@ -84,7 +84,7 @@ def main():
 
         # while loop until cp process is done
         while (keepgoing):
-            func()
+            keepgoing = func(pid, dest, sizehistory, timehistory, srcsize)
             # sleep until next check
             # TODO: check if sleep() is to inaccurate, since there are these weird stutters
             time.sleep(0.1)
@@ -99,8 +99,9 @@ def main():
 
 
 
-def func():
+def func(pid, dest, sizehistory, timehistory, srcsize):
     # check if cp process is still there
+    keepgoing = True
     if (not os.path.exists("/proc/" + pid)):
         keepgoing = False
 
@@ -148,7 +149,7 @@ def func():
     # Print the output string. It should always be printed on one line, but for some reason it's to slow -.-
     print out
 #            print '{0}\r'.format(out),
-
+    return keepgoing
 
 
 
