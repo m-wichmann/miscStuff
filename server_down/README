@@ -1,0 +1,4 @@
+==========
+server_down
+=====
+this script is used to shutdown a server of there are no clients left in the network
