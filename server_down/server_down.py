@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# script for shuting down
+# script for shuting down a server
 #
 # @author Martin Wichmann
 # @date 2010-02-21
