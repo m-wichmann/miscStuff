@@ -24,7 +24,7 @@ TARGET	= game_of_life
 GCC		= gcc
 RM		= rm
 
-CFLAGS	= -Wall -std=gnu99
+CFLAGS	= -Wall -std=gnu99 -O2
 
 SRC		= ./src/main.c ./src/io.c ./src/data.c ./src/cli.c ./src/backend.c 
 

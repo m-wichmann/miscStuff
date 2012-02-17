@@ -20,3 +20,58 @@ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 */
 
 #include "io.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+rounddata_t loadDataFromFile(char * filepath) {
+
+	rounddata_t ret;
+	ret.round_count = 0;
+	for (int i = 0; i < 20; i++) {
+		for (int j = 0; j < 20; j++) {
+			ret.data[i][j] = 0;
+		}
+	}
+
+	FILE *fp;
+
+	if((fp = fopen(filepath, "r")) == NULL) {
+		printf("Cannot open file.\n");
+		exit(1);
+	}
+
+
+	int temp = 42;
+	int i = 0;
+	int j = 0;
+	while ((temp = fgetc(fp)) != EOF) {
+		temp = temp - 48;
+		if ((temp == 0) || (temp == 1)) {
+			ret.data[i][j] = temp;
+			j++;
+		}
+		if (temp == -38) { // end of line
+			j = 0;
+			i++;
+		}
+	}
+
+	fclose(fp);
+
+	return ret;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

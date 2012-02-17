@@ -23,6 +23,8 @@ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 #ifndef IO_H
 #define IO_H
 
+#include "data.h"
 
+rounddata_t loadDataFromFile(char * filepath);
 
 #endif // IO_H

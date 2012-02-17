@@ -24,13 +24,6 @@ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 #include "io.h"
 #include "cli.h"
 
-
-
-#define DEFAULT_X 20
-#define DEFAULT_Y 20
-
-
-
 int main (void) {
 	printf("Start!\n");
 
@@ -41,15 +34,8 @@ int main (void) {
 	// set of rules
 	// dimension of the board
 	// edge behaviour
-//	int x = DEFAULT_X;
-//	int y = DEFAULT_Y;
 
-
-
-
-
-	// TODO: init data
-//	char data[x][y];
+	// init data
 	rounddata_t data;
 
 	data.round_count = 0;
@@ -59,14 +45,8 @@ int main (void) {
 		}
 	}
 
-	data.data[1][3] = 1;
-	data.data[2][1] = 1;
-	data.data[2][3] = 1;
-	data.data[3][2] = 1;
-	data.data[3][3] = 1;
-
-
-
+	// load game data from file
+	data = loadDataFromFile("/home/erebos/Programming/miscScripts/game_of_life/game_templates/glider_1.gol");
 
 	config_t config;
 	config.board_width = 20;
