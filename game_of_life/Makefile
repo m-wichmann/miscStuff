@@ -26,7 +26,7 @@ RM		= rm
 
 CFLAGS	= -Wall -std=gnu99
 
-SRC		= main.c io.c data.c cli.c backend.c 
+SRC		= ./src/main.c ./src/io.c ./src/data.c ./src/cli.c ./src/backend.c 
 
 all:
 	$(GCC) $(CFLAGS) $(SRC) -o $(TARGET)
