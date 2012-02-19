@@ -23,14 +23,41 @@ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 #ifndef DATA_H
 #define DATA_H
 
+#include <stdbool.h>
+
 typedef struct {
 	int round_count;
 	char data[20][20]; // fielddata; 0:free, 1:alive
 } rounddata_t;
 
 typedef struct {
+	// path to file
+	char * file;
+	// use cli
+	bool cli;
+	// use gui
+	bool gui;
+	// timing between steps in milliseconds
+	int timing;
+	// width of the board
 	int board_width;
+	// height of the board
 	int board_height;
+	// edge behaviour
+	char edge;
+	// set of rules
+	char rules;
 } config_t;
 
 #endif // DATA_H
+
+
+
+
+
+
+
+
+
+
+
