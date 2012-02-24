@@ -27,8 +27,6 @@ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 #include "cli.h"
 
 int main (int argc, char *argv[], char **envp) {
-	printf("Start!\n");
-
 	// init config
 	config_t config;
 
@@ -44,7 +42,8 @@ int main (int argc, char *argv[], char **envp) {
 
 
 	// parsing command line arguments
-	for (int i = 0; i < argc; i++) {
+	for (int i = 1; i < argc; i++) {
+//        printf("argv[%i]: %s\n", i, argv[i]);
 		if (argv[i][0] == '-') {
 			char s = argv[i][1];
 
@@ -100,15 +99,31 @@ int main (int argc, char *argv[], char **envp) {
 				// display help and exit
 				// TODO: add help text
 				case 'h':
-					printf("help\n");
+                    printf("Usage: game_of_life [Options]\n");
+                    printf("Options:\n");
+                    printf(" -h\tShow this help\n");
+                    printf(" -c\tUse cli as ui (Default)\n");
+                    printf(" -g\tUse gui (not yet implemented)\n");
+                    printf(" -t\tRound timing in milliseconds\n");
+                    printf(" -f\tPath to config file for initial pattern: -f\"./game_templates/glider_1.gol\"\n");
+                    printf(" -d\tField Dimensions: \"X\"x\"Y\" e.g. 20x30 (not yet implemented)\n");
+                    printf(" -e\tEdge behaviour (Not yet implemented)\n");
+                    printf(" -r\tSet of Rules to use (Not yet implemented)\n");
 					exit(0);
 					break;
 				default:
+                    printf("Please enter valid arguments. Use -h for help!\n");
+                    exit(-1);
 					break;
 			}
 		}
-	}
+        else {
+            printf("Please enter valid arguments. Use -h for help!\n");
+            exit(-1);
+        }
 
+	}
+/*
 	printf("\n");
 	printf("Configs:\n");
 	printf("config.board_width: %i\n",config.board_width);
@@ -119,7 +134,7 @@ int main (int argc, char *argv[], char **envp) {
 	printf("config.edge: %i\n",config.edge);;
 	printf("config.rules: %i\n",config.rules);
 	printf("config.file: %s\n",config.file);
-
+*/
 	// init data
 	rounddata_t data;
 
