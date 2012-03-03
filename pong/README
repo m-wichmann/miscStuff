@@ -1,0 +1,15 @@
+==========
+PyPong
+=====
+just a little pong game to test out pygame
+
+to play just run pong.py
+
+Keys:
+Player 1: W - Up
+          S - Down
+
+Player 2: Up - Up
+          Down - Down
+
+New Game: n
