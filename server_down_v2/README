@@ -1,0 +1,5 @@
+==========
+server_down_v2
+=====
+this is a reimplementation of the server_down script. It is used to shutdown a server if there are no clients left in the network
+

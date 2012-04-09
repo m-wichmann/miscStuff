@@ -8,6 +8,7 @@ All the parts of this repository are licensed under the LGPLv3 (http://www.gnu.o
 Parts of this little collection:
 - cp_wrapper
 - server_down
+- server_down_v2
 - game_of_life
 - present
 - pyPong
