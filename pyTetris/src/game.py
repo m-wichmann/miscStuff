@@ -16,28 +16,38 @@ class Game(object):
             for j in range(self.width):
                 self.field[i].append(' ')
 
+        # init active stones
         self.activeStone = None
         self.nextStone = None
+        self.nextRound()
 
 
     def printField(self):
 
-        # clear field
+        # clear field, char _ as placeholder
         tempfield = []
         for i in range(self.height):
             tempfield.append([])
             for j in range(self.width):
                 tempfield[i].append('_')
 
-        for i in range(0,4):
-            for j in range(0,3):
-                try:
-                    temp = self.activeStone.value[i][j]
-                    if temp == 'x':
-                        tempfield[self.activeStone.row + i][self.activeStone.column + j] = temp
-                except:
-                    pass
+        # place active stone
+        for field in self.activeStone.value:
+            x = None
+            y = None
+            for val in field:
+                if x == None:
+                    x = val
+                else:
+                    y = val
+            tempfield[self.activeStone.row + x][self.activeStone.column + y] = 'o'
 
+
+
+        # TODO: place rested stones
+
+
+        # print field
         for row in tempfield:
             for field in row:
                 print field,
@@ -60,7 +70,7 @@ class Game(object):
         print "placeActiveStone()"
 
         self.activeStone.row = -2
-        self.activeStone.column = 5
+        self.activeStone.column = 3
 
         self.__checkCollision()
 

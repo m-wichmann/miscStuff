@@ -15,19 +15,14 @@ class PyTetris(object):
 if __name__ == '__main__':
     print "Start!"
 
+#    obj = entities.Stone()
+#    obj.printStones()
+
     obj = game.Game()
-    print "====="
-    obj.nextRound()
-    obj.printField()
-    print "====="
-    obj.nextRound()
-    obj.printField()
-    print "====="
-    obj.nextRound()
-    obj.printField()
-    print "====="
-    obj.nextRound()
-    obj.printField()
+    for x in range(0,20):
+        obj.printField()
+        obj.nextRound()
+    
 
     print "Done!"
 
