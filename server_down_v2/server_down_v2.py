@@ -6,6 +6,7 @@
 # - change os.system and os.popen to subprocess
 
 #import logging
+from optparse import OptionParser
 import logging.handlers
 import os
 
@@ -18,33 +19,42 @@ def server_down():
     # init the logger
     logger = init_logger()
 
-    # get list of hosts from /etc/hosts
-    hosts = get_hosts(logger)
-
-    # check if any of the hosts are still alive
-    no_clients_alive = check_hosts(logger, hosts)
-
-    # if no clients are alive, shutdown the system
-    if (no_clients_alive == True):
-        log_traffic(logger)
-        shutdown_system(logger)
+    if statistics:
+        gen_statistics()
     else:
-        pass
+        # get list of hosts from /etc/hosts
+        hosts = get_hosts(logger)
+
+        # check if any of the hosts are still alive
+        no_clients_alive = check_hosts(logger, hosts)
+
+        # if no clients are alive, shutdown the system
+        if (no_clients_alive == True):
+            log_traffic(logger)
+            shutdown_system(logger)
+        else:
+            pass
 
 
 def parse_arguments():
     """Parse command line arguments"""
     pass
-#    parser = OptionParser()
-#    parser.add_option("-g", "--generate", action="store_true", dest="generate", help="generate the html documents")
-    #parser.add_option("-c", "--configfile", dest="config_file",
-    #    help="path to config file with the profiles and show ids",
-    #    metavar="FILE")
+    parser = OptionParser()
+    parser.add_option("-d", "--debug", action="store_true", dest="debug", help="use debug mode")
+    parser.add_option("-s", "--statistics", action="store_true", dest="statistics", help="parse log file and generate statistics. This assumes that the log file is \"well\" formatted. This omits the whole shutdown mechanism.")
 
-#    (options, args) = parser.parse_args()
+    (options, args) = parser.parse_args()
 
-#    if options.clean:
-#        self.remove()
+    global debug
+    global statistics
+
+    debug = False
+    statistics = False
+
+    if options.debug:
+        debug = True
+    if options.statistics:
+        statistics = True
 
 
 def init_logger():
@@ -55,10 +65,15 @@ def init_logger():
     # set file handle for log file
     # use a rotating log file with max 200kb and backup up to 3 log files
     error = False
+
+    global logfile
+
     try:
-        log_fh = logging.handlers.RotatingFileHandler('/var/log/server_down.log', maxBytes=200000, backupCount=3)
+        logfile = '/var/log/server_down.log'
+        log_fh = logging.handlers.RotatingFileHandler(logfile, maxBytes=200000, backupCount=3)
     except IOError:
-        log_fh = logging.handlers.RotatingFileHandler('./server_down.log', maxBytes=200000, backupCount=3)
+        logfile = './server_down.log'
+        log_fh = logging.handlers.RotatingFileHandler(logfile, maxBytes=200000, backupCount=3)
         error = True
     log_fh.setLevel(logging.DEBUG)
     # set formatter for logger
@@ -141,18 +156,20 @@ def log_traffic(logger):
     # output data to logger
     logger.info("Traffic since last shutdown:")
     for data in stats:
-        logger.info("\tInterface: " + data["iface"] + "\tRX: " + sizeof_fmt(int(data["RX"])) + "\tTX: " + sizeof_fmt(int(data["TX"])))
+        logger.info("\tInterface: " + data["iface"] + "\tRX: " + bytes_to_SI(int(data["RX"])) + "\tTX: " + bytes_to_SI(int(data["TX"])))
 
 
 def shutdown_system(logger):
     """Shut down the system."""
     logger.info("Shutting down system in 5 seconds")
     # shutdown system with a 5 second delay to exit python
-#    print "shutdown!"
-    os.system('/sbin/shutdown -h 1')
+    if debug:
+        print "DEBUG: System would shut down!"
+    else:
+        os.system('/sbin/shutdown -h 1')
 
 
-def sizeof_fmt(num):
+def bytes_to_SI(num):
     """Function to convert byte count to readable form.
     Taken out of lib hurry.filesize
     """
@@ -163,5 +180,111 @@ def sizeof_fmt(num):
     return "%3.1f %s" % (num, 'TB')
 
 
+def SI_to_bytes(num):
+    temp = num.split()
+    ret = 0
+    if temp[1] == "bytes":
+        ret = float(temp[0])
+    if temp[1] == "KB":
+        ret = float(temp[0]) * 1000
+    if temp[1] == "MB":
+        ret = float(temp[0]) * 1000000
+    if temp[1] == "GB":
+        ret = float(temp[0]) * 1000000000
+    if temp[1] == "TB":
+        ret = float(temp[0]) * 1000000000000
+    return ret
+
+
+def gen_statistics():
+    # data stucture:
+    # [{date:DATE, time:TIME, data:{{if:{RX:data,TX:data}},{if:{RX:data,TX:data}}}}, ...]
+    data = parse_log()
+    
+    # generate some output
+    fh = open('./server_down.html', 'w')
+    # write header...
+    fh.write("<html>\
+        <table border=\"1\">\
+        <tr>\
+        <th>Time</th>\
+        <th>Date</th>\
+        <th>Received</th>\
+        <th>Send</th>\
+        <th>Traffic/Day</th>\
+        </tr>")
+
+    sumRXTX = 0
+    count = 0
+    for entry in data:
+        fh.write("<tr>")
+
+        fh.write("<td>" + entry["time"] + "</td>")
+        fh.write("<td>" + entry["date"] + "</td>")
+        fh.write("<td>" + str(bytes_to_SI(entry["data"]["eth0"]["RX"])) + "</td>")
+        fh.write("<td>" + str(bytes_to_SI(entry["data"]["eth0"]["TX"])) + "</td>")
+        temp = entry["data"]["eth0"]["RX"] + entry["data"]["eth0"]["TX"]
+        sumRXTX = sumRXTX + temp
+        count = count + 1
+        fh.write("<td>" + str(bytes_to_SI(temp)) + "</td>")
+        fh.write("</tr>")
+
+    # write footer...
+    fh.write("</table>")
+
+    avg = sumRXTX / count
+    fh.write("Average: " + str(bytes_to_SI(avg)))
+
+    fh.write("</html>")
+    
+
+def parse_log():
+    fh = open(logfile, 'rb')
+    status = 0
+
+    data = []
+    index = 0
+    for line in fh:
+        if line.find('Shutting down system in 5 seconds') != -1:
+            status = 0
+            index = index + 1
+        if status == 1:
+            # get dict for if
+            ifdict = data[index]["data"]
+            # split line
+            splitline = line.split()
+            # parse data for if
+            ifdata = {}
+            ifdata[splitline[7].strip(":")] = SI_to_bytes(splitline[8] + " " + splitline[9])
+            ifdata[splitline[10].strip(":")] = SI_to_bytes(splitline[11] + " " + splitline[12])
+            # store if data           
+            ifdict[splitline[6]] = ifdata
+        if line.find('Traffic since last shutdown') != -1:
+            status = 1
+            splitline = line.split()
+            data.append({})
+            data[index]["date"] = splitline[0]
+            data[index]["time"] = splitline[1]
+            data[index]["data"] = {}
+    fh.close()
+    return data
+
+
 if __name__ == '__main__':
     server_down()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
