@@ -9,6 +9,13 @@
 from optparse import OptionParser
 import logging.handlers
 import os
+import rpy2.robjects as robjects
+from rpy2.robjects.packages import importr
+from time import time
+import matplotlib
+from pylab import figure
+from datetime import datetime
+import glob
 
 
 def server_down():
@@ -200,6 +207,7 @@ def gen_statistics():
     # data stucture:
     # [{date:DATE, time:TIME, data:{{if:{RX:data,TX:data}},{if:{RX:data,TX:data}}}}, ...]
     data = parse_log()
+    filelist = generate_graphs_matplotlib(data)
     
     # generate some output
     fh = open('./server_down.html', 'w')
@@ -229,14 +237,82 @@ def gen_statistics():
         fh.write("<td>" + str(bytes_to_SI(temp)) + "</td>")
         fh.write("</tr>")
 
-    # write footer...
     fh.write("</table>")
 
-    avg = sumRXTX / count
+    try:
+        avg = sumRXTX / count
+    except ZeroDivisionError:
+        avg = 0
     fh.write("Average: " + str(bytes_to_SI(avg)))
+    fh.write("<br/>")
+
+    # include all png files that start with "sd_graph_" in html document
+    script_path = os.path.realpath(__file__)
+    img_path = script_path[0:script_path.rindex("/") + 1]
+
+    for infile in glob.glob( os.path.join(img_path, 'sd_graph_*.png') ):
+        fh.write("<img src=\"" + os.path.basename(infile) + "\">")
 
     fh.write("</html>")
     
+
+def generate_graphs_R(data):
+    # requirements: TODO...
+
+    # get r "main" object
+    r = robjects.r
+
+    # open device for files
+    grdevices = importr('grDevices')
+    # set output file
+    grdevices.png(file="./file.png", width=512, height=512)
+    # plot stuff
+    x = []
+    y = []
+    for entry in data:
+#        print entry["date"]
+#        print entry["time"]
+#        print entry["data"]["eth0"]["RX"]
+        x.append(entry["time"].replace(":",""))
+        y. append(entry["data"]["eth0"]["RX"])
+
+    print x
+    print y
+
+    r.plot(x, y, ylab="foo/bar", xlab="temp", col="red")
+    # close device
+    grdevices.dev_off()
+
+#    grdevices = importr('grDevices')
+#    grdevices.png(file="./file2.png", width=512, height=512)
+#    r.plot(x, y, ylab="foo/bar", xlab="temp", col="red")
+#    grdevices.dev_off()
+
+
+def generate_graphs_matplotlib(data):
+
+    # graph: traffic over time
+    dates = []
+    values = []
+    for entry in data:
+        # split date and time and convert to matplotlib format
+        time_split = entry["time"].split(":")
+        date_split = entry["date"].split("-")
+        temp = datetime(year = int(date_split[0]), month = int(date_split[1]), day = int(date_split[2]), hour = int(time_split[0]), minute = int(time_split[1]), second = int(time_split[2]))
+        temp = matplotlib.dates.date2num(temp)
+
+        dates.append(temp)
+
+        rx_tx_sum = entry["data"]["eth0"]["RX"] + entry["data"]["eth0"]["TX"]
+        values.append(rx_tx_sum)
+    fig = figure()
+    ax = fig.add_subplot(111)
+    ax.plot_date(dates, values, '-')
+    fig.autofmt_xdate()
+    fig.savefig("sd_graph_traffic_over_time.png")
+
+
+
 
 def parse_log():
     fh = open(logfile, 'rb')
