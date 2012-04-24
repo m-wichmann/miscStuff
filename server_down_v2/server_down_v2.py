@@ -212,7 +212,8 @@ def gen_statistics():
     # data stucture:
     # [{date:DATE, time:TIME, data:{{if:{RX:data,TX:data}},{if:{RX:data,TX:data}}}}, ...]
     data = parse_log()
-    filelist = generate_graphs_matplotlib(data)
+    generate_graphs_matplotlib(data)
+    generate_graphs_R(data)
     
     # generate some output
     fh = open('./server_down.html', 'w')
@@ -270,7 +271,7 @@ def generate_graphs_R(data):
     # open device for files
     grdevices = importr('grDevices')
     # set output file
-    grdevices.png(file="./file.png", width=512, height=512)
+    grdevices.png(file="./sd_graph_r_test.png", width=512, height=512)
     # plot stuff
     x = []
     y = []
@@ -280,9 +281,6 @@ def generate_graphs_R(data):
 #        print entry["data"]["eth0"]["RX"]
         x.append(entry["time"].replace(":",""))
         y. append(entry["data"]["eth0"]["RX"])
-
-    print x
-    print y
 
     r.plot(x, y, ylab="foo/bar", xlab="temp", col="red")
     # close device
@@ -315,7 +313,7 @@ def generate_graphs_matplotlib(data):
     ax = fig.add_subplot(111)
     ax.plot_date(dates, values, '-')
     fig.autofmt_xdate()
-    fig.savefig("sd_graph_traffic_over_time.png")
+    fig.savefig("sd_graph_mpl_traffic_over_time.png")
 
 
 
@@ -343,7 +341,7 @@ def generate_graphs_matplotlib(data):
     plt.yticks(numpy.arange(0,max(RX) + max(TX), (max(RX) + max(TX))/11))
     plt.legend( (p1[0], p2[0]), ('RX', 'TX') )
 
-    plt.savefig("sd_graph_rx_tx_stacked.png")
+    plt.savefig("sd_graph_mpl_rx_tx_stacked.png")
 
 
 
