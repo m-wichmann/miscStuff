@@ -16,6 +16,8 @@ import matplotlib
 from pylab import figure
 from datetime import datetime
 import glob
+import numpy
+import matplotlib.pyplot as plt
 
 
 def server_down():
@@ -125,24 +127,27 @@ def get_hosts(logger):
 def check_hosts(logger, hosts):
     """Check hosts using fping."""
     logger.info("Checking for active hosts...")
-    # join hosts to string
-    hosts_string = ' '.join(hosts)
-    # build command
-    cmd = 'fping -a ' + hosts_string + ' | wc -l'
-    # execute command
-    cmdfd = os.popen(cmd, "r")
-    # get return value from commandline
-    ret = ""
-    for line in cmdfd:
-        ret = line
-
-    logger.info(str(ret).strip('\n') + " active host(s) detected!")
-
-    # check if no clients are alive
-    if int(ret) != 0:
-        return False
-    else:
+    if debug:
         return True
+    else:
+        # join hosts to string
+        hosts_string = ' '.join(hosts)
+        # build command
+        cmd = 'fping -a ' + hosts_string + ' | wc -l'
+        # execute command
+        cmdfd = os.popen(cmd, "r")
+        # get return value from commandline
+        ret = ""
+        for line in cmdfd:
+            ret = line
+
+        logger.info(str(ret).strip('\n') + " active host(s) detected!")
+
+        # check if no clients are alive
+        if int(ret) != 0:
+            return False
+        else:
+            return True
 
 
 def log_traffic(logger):
@@ -305,11 +310,40 @@ def generate_graphs_matplotlib(data):
 
         rx_tx_sum = entry["data"]["eth0"]["RX"] + entry["data"]["eth0"]["TX"]
         values.append(rx_tx_sum)
+
     fig = figure()
     ax = fig.add_subplot(111)
     ax.plot_date(dates, values, '-')
     fig.autofmt_xdate()
     fig.savefig("sd_graph_traffic_over_time.png")
+
+
+
+    # graph 2
+    fig = figure()
+
+    labels = []
+    RX = []
+    TX = []
+
+    for entry in data:
+        labels.append(entry["date"])
+        RX.append(int(entry["data"]["eth0"]["RX"]))
+        TX.append(int(entry["data"]["eth0"]["TX"]))
+
+    ind = numpy.arange(len(RX))    # the x locations for the groups
+    width = 0.35       # the width of the bars: can also be len(x) sequence
+
+    p1 = plt.bar(ind, RX, width, color='r')
+    p2 = plt.bar(ind, TX, width, color='g', bottom=RX)
+
+    plt.ylabel('Data [byte]')
+    plt.title('Data RX/TX per day')
+    plt.xticks(ind+width/2., labels )
+    plt.yticks(numpy.arange(0,max(RX) + max(TX), (max(RX) + max(TX))/11))
+    plt.legend( (p1[0], p2[0]), ('RX', 'TX') )
+
+    plt.savefig("sd_graph_rx_tx_stacked.png")
 
 
 
