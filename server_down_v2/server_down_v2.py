@@ -295,29 +295,64 @@ def generate_graphs_R(data):
 def generate_graphs_matplotlib(data):
 
     # graph: traffic over time
-    dates = []
-    values = []
-    for entry in data:
+ 
+    # This version prints only one interface but is fairly clean   
+#    dates = []
+#    values = []
+#    for entry in data:
         # split date and time and convert to matplotlib format
-        time_split = entry["time"].split(":")
-        date_split = entry["date"].split("-")
-        temp = datetime(year = int(date_split[0]), month = int(date_split[1]), day = int(date_split[2]), hour = int(time_split[0]), minute = int(time_split[1]), second = int(time_split[2]))
-        temp = matplotlib.dates.date2num(temp)
+#        time_split = entry["time"].split(":")
+#        date_split = entry["date"].split("-")
+#        temp = datetime(year = int(date_split[0]), month = int(date_split[1]), day = int(date_split[2]), hour = int(time_split[0]), minute = int(time_split[1]), second = int(time_split[2]))
+#        temp = matplotlib.dates.date2num(temp)
+#
+#        dates.append(temp)
+#
+#        rx_tx_sum = entry["data"]["eth0"]["RX"] + entry["data"]["eth0"]["TX"]
+#        values.append(rx_tx_sum)
+#
+#    fig = figure()
+#    ax = fig.add_subplot(111)
+#    ax.plot_date(dates, values, '-')
+#    bx = fig.add_subplot(111)
+#    bx.plot_date(dates, values, '-')
+#    fig.autofmt_xdate()
+#    fig.savefig("sd_graph_mpl_traffic_over_time.png")
 
-        dates.append(temp)
 
-        rx_tx_sum = entry["data"]["eth0"]["RX"] + entry["data"]["eth0"]["TX"]
-        values.append(rx_tx_sum)
+    # TODO: this version should print all interfaces but is really badly designed!
+    graph_data = {}
+    if_keys = data[0]["data"].keys()
+
+    for interface in if_keys:
+        graph_data[interface] = {"values": []}
+
+    for entry in data:
+        for interface in if_keys:
+            graph_data[interface]["values"].append({"date":entry["date"], "value":entry["data"][interface]["RX"]})
 
     fig = figure()
-    ax = fig.add_subplot(111)
-    ax.plot_date(dates, values, '-')
+
+    for entry in graph_data:
+        dates = []
+        values = []
+        for x in graph_data[entry]["values"]:
+            date_split = x["date"].split("-")
+            temp = datetime(year = int(date_split[0]), month = int(date_split[1]), day = int(date_split[2]))
+            temp = matplotlib.dates.date2num(temp)
+            dates.append(temp)
+            values.append(x["value"])
+        ax = fig.add_subplot(111)
+        ax.plot_date(dates, values, '-')
+
     fig.autofmt_xdate()
     fig.savefig("sd_graph_mpl_traffic_over_time.png")
 
 
 
-    # graph 2
+
+
+    # graph 2: RX and TX stacked per day
     fig = figure()
 
     labels = []
