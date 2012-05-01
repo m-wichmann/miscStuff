@@ -3,22 +3,23 @@
 
 import json
 
-
 class Match(object):
-    def __init__(self):
-        self.time = None
-        self.player1 = None # player 1 object
-        self.player2 = None # player 2 object
-        self.points1 = 0 # points player 1
-        self.points2 = 0 # points player 2
-        self.serve = None # wer hatte aufschlag
-        self.south = None # wer spielt im süden
+    def __init__(self, player1, player2, points1, points2, serveplayer1, southplayer1, time):
+        self.player1 = player1
+        self.player2 = player2
+        self.points1 = points1
+        self.points2 = points2
+        self.serveplayer1 = serveplayer1
+        self.southplayer1 = southplayer1
+        self.time = time
+
 
 class Player(object):
     def __init__(self, name):
         self.name = name
     def __str__(self):
         return self.name
+
 
 class TTST():
     def main(self):
@@ -27,7 +28,6 @@ class TTST():
 #        self.addPlayer("Markus")
 #        self.addPlayer("Martin")
 #        self.addPlayer("Christian")
-
 #        self.addMatch("Markus", "Martin", 11, 3, 1, 1, 0)
 
         self.exit = False
@@ -59,10 +59,10 @@ class TTST():
                 player2 = raw_input("Player 2:")
                 points1 = raw_input("Points 1:")
                 points2 = raw_input("Points 2:")
-                serve = raw_input("Serve:")
-                south = raw_input("South:")
+                serveplayer1 = raw_input("Serveplayer1:")
+                southplayer1 = raw_input("Southplayer1:")
                 time = raw_input("Time:")
-                ret = self.addMatch(player1, player2, points1, points2, serve, south, time)
+                ret = self.addMatch(player1, player2, points1, points2, serveplayer1, southplayer1, time)
                 if ret == -1:
                     print "Could not add match"
             elif (userInput == "8"):
@@ -75,36 +75,28 @@ class TTST():
         self.saveData(self.data, "./data.json")
 
 
-
     def addPlayer(self, name):
         player = Player(name)
         self.data["player"].append(player)
         return player
 
-    def addMatch(self, player1, player2, points1, points2, serve, south, time):
-        match = Match()
 
-        match.player1 = None
-        match.player2 = None
-
+    def addMatch(self, player1, player2, points1, points2, serveplayer1, southplayer1, time):
+        player1temp = None
+        player2temp = None
         for entry in self.data["player"]:
             if entry.name == player1:
-                match.player1 = entry
+                player1temp = entry
             if entry.name == player2:
-                match.player2 = entry
+                player2temp = entry
 
-        match.points1 = points1
-        match.points2 = points2
-        match.serve = serve
-        match.south = south
-        match.time = time
-
-        if (match.player1 == None or match.player1 == None):
+        if (player1temp == None or player2temp == None):
             return -1
         else:
+            match = Match(player1temp, player2temp, points1, points2, serveplayer1, southplayer1, time)
             self.data["matches"].append(match)
-            return match
     
+
     # TODO: make this more dynamic
     def dataToJSON(self, data):
         JSONdata = {"player": [], "matches": []}
@@ -117,14 +109,30 @@ class TTST():
             JSONdata["matches"].append(temp)
         return JSONdata
 
-    # TODO: get this to work!
+
     def JSONToData(self, data):
         ret = {"player": [], "matches": []}
+
         for player in data["player"]:
-            ret["player"].append(self.addPlayer(player))
+            ret["player"].append(Player(player))
         for match in data["matches"]:
-            ret["matches"].append(self.addMatch(entry["player1"],entry["player2"],entry["points1"],entry["points2"],entry["serve"],entry["south"],entry["time"],))
+            player1name = match["player1"]
+            player2name = match["player2"]
+            player1 = None
+            player2 = None
+            for player in ret["player"]:
+                if player.name == player1name:
+                    player1 = player
+                elif player.name == player2name:
+                    player2 = player
+            if player1 == None or player2 == None:
+                pass
+            else:
+                match = Match(player1, player2, match["points1"], match["points2"], match["serveplayer1"], match["southplayer1"], match["time"])
+                ret["matches"].append(match)
+
         return ret
+
 
     def saveData(self, data, filename):
         fh = open(filename, "wb")
@@ -132,17 +140,15 @@ class TTST():
         json.dump(temp, fh)
         fh.close()
 
+
     def loadData(self, filename):
         try:
             fh = open(filename, "rb")        
             data = json.load(fh)
             ret = self.JSONToData(data)
-            print ret
             return ret
         except:
             return {"player": [], "matches": []}
-
-
 
 
 if __name__ == '__main__':
