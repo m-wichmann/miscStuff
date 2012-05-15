@@ -31,9 +31,15 @@ def main():
     filepath = "ocup.avi"
     data = openfile(filepath)
 
+
+    # DEBUG: just to skip some frames
+#    for f in xrange(860):
+#        frame = cv.QueryFrame(data["video"])
+
+
     # TODO: last image is empty?
-#    for f in xrange(data["fcount"] - 1):
-    for f in xrange(1):
+    for f in xrange(data["fcount"] - 1):
+#    for f in xrange(1):
         # query next frame from video
         frame = cv.QueryFrame(data["video"])
 
@@ -41,19 +47,20 @@ def main():
         framebw = cv.CreateImage((frame.width, frame.height), cv.IPL_DEPTH_8U, 1)
         framebin = cv.CreateImage((frame.width, frame.height), cv.IPL_DEPTH_8U, 1)
         frameedges = cv.CreateImage((frame.width, frame.height), cv.IPL_DEPTH_8U, 1)
+        frameout = cv.CreateImage((frame.width, frame.height), cv.IPL_DEPTH_8U, 1)
 
         # rgb to grayscale
         cv.CvtColor(frame,framebw,cv.CV_BGR2GRAY)
         # grayscale to binary
-        cv.Threshold(framebw, framebin, 200, 255, cv.CV_THRESH_BINARY);
+        cv.Threshold(framebw, framebin, 150, 255, cv.CV_THRESH_BINARY);
         # detect edges with canny...
         cv.Canny(framebin,frameedges,150,300,3)
+#        cv.Canny(framebin,frameedges,150,100,3)
 
-#        cv.ShowImage( "My Video Window", framebin)
-#        cv.WaitKey(50000)
+        cv.Copy(framebin, frameout)
 
         # check the image and get result if street is straight or curved
-        result = checkimage(framebin)
+        result = checkimage(framebin, frameout)
 
         # TODO: implement state machine or something
         if result == 0:
@@ -62,6 +69,11 @@ def main():
             print "left"
         if result == 1:
             print "right"
+
+        
+
+        cv.ShowImage("window", frameout)
+        cv.WaitKey(50000)
 
     # delete used ressources
     deleteRessources(data)
@@ -75,9 +87,9 @@ def main():
 
 
 
-def checkimage(frame):
+def checkimage(frame, frameout):
     """check image and return if street is straigth (0), left (-1) or right (1)"""
-    ret = border.checkimage(frame)
+    ret = border.checkimage(frame, frameout)
     return ret
 
 
