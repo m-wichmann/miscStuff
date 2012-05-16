@@ -12,6 +12,7 @@
 # cv.SaveImage("bilder/bild" + str(f).zfill(4) + ".png", frame)
 #
 #
+#        cv.Circle(frameout, (x,y), 5, (255,0,0), thickness=2)
 #
 #
 # bin image:
@@ -33,7 +34,7 @@ def main():
 
 
     # DEBUG: just to skip some frames
-#    for f in xrange(860):
+#    for f in xrange(300):
 #        frame = cv.QueryFrame(data["video"])
 
 
@@ -48,19 +49,21 @@ def main():
         framebin = cv.CreateImage((frame.width, frame.height), cv.IPL_DEPTH_8U, 1)
         frameedges = cv.CreateImage((frame.width, frame.height), cv.IPL_DEPTH_8U, 1)
         frameout = cv.CreateImage((frame.width, frame.height), cv.IPL_DEPTH_8U, 1)
+        frameoutcol = cv.CreateImage((frame.width, frame.height), cv.IPL_DEPTH_8U, 3)
 
         # rgb to grayscale
         cv.CvtColor(frame,framebw,cv.CV_BGR2GRAY)
         # grayscale to binary
         cv.Threshold(framebw, framebin, 150, 255, cv.CV_THRESH_BINARY);
         # detect edges with canny...
-        cv.Canny(framebin,frameedges,150,300,3)
+#        cv.Canny(framebin,frameedges,150,300,3)
 #        cv.Canny(framebin,frameedges,150,100,3)
 
         cv.Copy(framebin, frameout)
+        cv.CvtColor(frameout, frameoutcol, cv.CV_GRAY2RGB)
 
         # check the image and get result if street is straight or curved
-        result = checkimage(framebin, frameout)
+        result = checkimage(framebin, frameoutcol)
 
         # TODO: implement state machine or something
         if result == 0:
@@ -72,7 +75,7 @@ def main():
 
         
 
-        cv.ShowImage("window", frameout)
+        cv.ShowImage("window", frameoutcol)
         cv.WaitKey(50000)
 
     # delete used ressources
@@ -110,11 +113,13 @@ def openfile(filepath):
     fcount = int(cv.GetCaptureProperty(video, cv.CV_CAP_PROP_FRAME_COUNT))
 
     # print video data
+    print "======"
     print "Opened file: " + filepath
     print "Width: " + str(width)
     print "Height: " + str(height)
     print "FPS: " + str(fps)
     print "Frame count: " + str(fcount)
+    print "======"
 
     # store data in dict
     # TODO: check if necesarry
