@@ -4,9 +4,9 @@
 import json
 
 class Match(object):
-    def __init__(self, player1, player2, points1, points2, serveplayer1, southplayer1, time):
-        self.player1 = player1
-        self.player2 = player2
+    def __init__(self, playerid1, playerid2, points1, points2, serveplayer1, southplayer1, time):
+        self.playerid1 = playerid1
+        self.playerid2 = playerid2
         self.points1 = points1
         self.points2 = points2
         self.serveplayer1 = serveplayer1
@@ -15,10 +15,11 @@ class Match(object):
 
 
 class Player(object):
-    def __init__(self, name):
+    def __init__(self, name, pid):
         self.name = name
+        self.pid = pid
     def __str__(self):
-        return self.name
+        return str(self.pid) + " " + str(self.name)
 
 
 class TTST():
@@ -55,8 +56,8 @@ class TTST():
                 self.addPlayer(nameInput)
             elif (userInput == "2"):
                 print "Add new match"
-                player1 = raw_input("Player 1:")
-                player2 = raw_input("Player 2:")
+                player1 = raw_input("Player ID 1:")
+                player2 = raw_input("Player ID 2:")
                 points1 = raw_input("Points 1:")
                 points2 = raw_input("Points 2:")
                 serveplayer1 = raw_input("Serveplayer1:")
@@ -67,33 +68,39 @@ class TTST():
                     print "Could not add match"
             elif (userInput == "8"):
                 for entry in self.data["player"]:
-                    print entry.name
+                    print str(entry)
             elif (userInput == "9"):
                 for entry in self.data["matches"]:
-                    print str(entry.player1) + " " + str(entry.points1) + ":" + str(entry.points2) + " " + str(entry.player2)
+                    print str(entry.playerid1) + " " + str(entry.points1) + ":" + str(entry.points2) + " " + str(entry.playerid2)
 
         self.saveData(self.data, "./data.json")
 
 
     def addPlayer(self, name):
-        player = Player(name)
+        pid = 0
+        pids = []        
+        for p in self.data["player"]:
+            pids.append(p.pid)
+
+        pids.sort()
+        try:
+            pid = pids[len(pids) - 1] + 1
+        except IndexError:
+            pass
+
+        player = Player(name, pid)
+
         self.data["player"].append(player)
         return player
 
 
     def addMatch(self, player1, player2, points1, points2, serveplayer1, southplayer1, time):
-        player1temp = None
-        player2temp = None
-        for entry in self.data["player"]:
-            if entry.name == player1:
-                player1temp = entry
-            if entry.name == player2:
-                player2temp = entry
+        pids = []        
+        for p in self.data["player"]:
+            pids.append(p.pid)
 
-        if (player1temp == None or player2temp == None):
-            return -1
-        else:
-            match = Match(player1temp, player2temp, points1, points2, serveplayer1, southplayer1, time)
+        if pids.count(int(player1)) == 1 and pids.count(int(player2)) == 1:
+            match = Match(player1, player2, points1, points2, serveplayer1, southplayer1, time)
             self.data["matches"].append(match)
     
 
@@ -101,12 +108,9 @@ class TTST():
     def dataToJSON(self, data):
         JSONdata = {"player": [], "matches": []}
         for entry in data["player"]:
-            JSONdata["player"].append(str(entry))
+            JSONdata["player"].append(entry.__dict__)
         for entry in data["matches"]:
-            temp = entry.__dict__
-            temp["player1"] = str(temp["player1"])
-            temp["player2"] = str(temp["player2"])
-            JSONdata["matches"].append(temp)
+            JSONdata["matches"].append(entry.__dict__)
         return JSONdata
 
 
@@ -114,22 +118,10 @@ class TTST():
         ret = {"player": [], "matches": []}
 
         for player in data["player"]:
-            ret["player"].append(Player(player))
+            ret["player"].append(Player(player["name"], player["pid"]))
         for match in data["matches"]:
-            player1name = match["player1"]
-            player2name = match["player2"]
-            player1 = None
-            player2 = None
-            for player in ret["player"]:
-                if player.name == player1name:
-                    player1 = player
-                elif player.name == player2name:
-                    player2 = player
-            if player1 == None or player2 == None:
-                pass
-            else:
-                match = Match(player1, player2, match["points1"], match["points2"], match["serveplayer1"], match["southplayer1"], match["time"])
-                ret["matches"].append(match)
+            newmatch = Match(match["playerid1"], match["playerid2"], match["points1"], match["points2"], match["serveplayer1"], match["southplayer1"], match["time"])
+            ret["matches"].append(newmatch)
 
         return ret
 
