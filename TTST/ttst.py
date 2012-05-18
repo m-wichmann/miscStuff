@@ -22,9 +22,13 @@ class Player(object):
         return str(self.pid) + " " + str(self.name)
 
 
-class TTST():
-    def cli(self):
+class TTST(object):
+    def __init__(self):
         self.data = self.loadData("./data.json")
+
+
+    def cli(self):
+#        self.data = self.loadData("./data.json")
 
         self.exit = False
         while (self.exit == False):
@@ -144,11 +148,35 @@ class TTST():
 
 def application(environ, start_response):
 
-    output = []    
+    # HTML output var
+    output = []
 
-    # get data from file
+    # create main obj and load data
     obj = TTST()
-    data = obj.loadData("./data.json")
+
+    # evaluate POST data
+    if environ['REQUEST_METHOD'] == 'POST':
+        # read raw data
+        rawpostdata = environ['wsgi.input'].read(int(environ["CONTENT_LENGTH"]))
+
+        # split by variable
+        rawpostdata = rawpostdata.split("&")
+        postdata = {}
+        # split vars by = and store in dict
+        for field in rawpostdata:
+            postdata[field.split("=")[0]] = field.split("=")[1]
+
+        # TODO: fix this really bad stuff
+        if len(postdata) == 1:
+            obj.addPlayer(postdata["newplayername"])
+
+        if len(postdata) == 9:
+            # TODO: calc date and find player ids
+            date = postdata["day"] + "-" + postdata["month"] + "-" + postdata["year"]
+            obj.addPlayer(postdata["player1"], postdata["player2"], postdata["points1"], postdata["points2"], postdata["serve"], postdata["south"], date)
+
+        # save changed data
+        obj.saveData(obj.data, "./data.json")
 
     # output player
     output.append("<h1>Player</h1>")
@@ -160,7 +188,7 @@ def application(environ, start_response):
     output.append("</tr>")
 
     player = {}
-    for p in data["player"]:
+    for p in obj.data["player"]:
         # store player in dict for later use
         player[str(p.pid)] = p.name
         output.append("<tr>")
@@ -184,7 +212,7 @@ def application(environ, start_response):
     output.append("<th>Zeit</th>")
     output.append("</tr>")
 
-    for m in data["matches"]:
+    for m in obj.data["matches"]:
         output.append("<tr>")
         output.append("<td>" + str(player[str(m.playerid1)]) + "</td>")
         output.append("<td>" + str(m.points1) + "</td>")
@@ -195,6 +223,48 @@ def application(environ, start_response):
         output.append("<td>" + str(m.time) + "</td>")
         output.append("</tr>")
     output.append("</table>")
+
+    output.append("<hr>")
+
+    # add new player
+    output.append("<h1>Add new player</h1>")
+
+    output.append('<form method="post">')
+    output.append('<p>Name:<input type="text" name="newplayername"></p>')
+    output.append('<br><input value="Add new player" type="submit">')
+    output.append('</form>')
+
+    # add new matches
+    output.append("<h1>Add new match</h1>")
+    output.append('<form method="post">')
+
+    output.append("<table>")
+    output.append("<tr>")
+    output.append("<th>Player 1</th>")
+    output.append("<th></th>")
+    output.append("<th></th>")
+    output.append("<th>Player 2</th>")
+    output.append("<th>Aufschlag</th>")
+    output.append("<th>S&uuml;d</th>")
+    output.append("<th>TT</th>")
+    output.append("<th>MM</th>")
+    output.append("<th>JJJJ</th>")
+    output.append("</tr>")
+    output.append("<tr>")
+    output.append("<td>" + '<input type="text" name="player1">' + "</td>")
+    output.append("<td>" + '<input type="text" name="points1" size="2" maxlength="2">' + "</td>")
+    output.append("<td>" + '<input type="text" name="points2" size="2" maxlength="2">' + "</td>")
+    output.append("<td>" + '<input type="text" name="player2">' + "</td>")
+    output.append("<td>" + '<select name="serve" size="2"><option>Player 1</option><option>Player 2</option></select>' + "</td>")
+    output.append("<td>" + '<select name="south" size="2"><option>Player 1</option><option>Player 2</option></select>' + "</td>")
+    output.append("<td>" + '<input name="day" type="text" size="2" maxlength="2">' + "</td>")
+    output.append("<td>" + '<input name="month" type="text" size="2" maxlength="2">' + "</td>")
+    output.append("<td>" + '<input name="year" type="text" size="4" maxlength="4">' + "</td>")
+    output.append("</tr>")
+    output.append("</table>")
+
+    output.append('<br><input value="Add new match" type="submit">')
+    output.append('</form>')
 
     # generate response
     output_len = sum(len(line) for line in output)
