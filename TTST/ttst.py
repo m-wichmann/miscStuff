@@ -23,13 +23,8 @@ class Player(object):
 
 
 class TTST():
-    def main(self):
+    def cli(self):
         self.data = self.loadData("./data.json")
-
-#        self.addPlayer("Markus")
-#        self.addPlayer("Martin")
-#        self.addPlayer("Christian")
-#        self.addMatch("Markus", "Martin", 11, 3, 1, 1, 0)
 
         self.exit = False
         while (self.exit == False):
@@ -143,6 +138,93 @@ class TTST():
             return {"player": [], "matches": []}
 
 
-if __name__ == '__main__':
+
+
+
+
+def application(environ, start_response):
+
+    output = []    
+
+    # get data from file
     obj = TTST()
-    obj.main()
+    data = obj.loadData("./data.json")
+
+    # output player
+    output.append("<h1>Player</h1>")
+
+    output.append("<table>")
+    output.append("<tr>")
+    output.append("<th>ID</th>")
+    output.append("<th>Name</th>")
+    output.append("</tr>")
+
+    player = {}
+    for p in data["player"]:
+        # store player in dict for later use
+        player[str(p.pid)] = p.name
+        output.append("<tr>")
+        output.append("<td>" + str(p.pid) + "</td>")
+        output.append("<td>" + str(p.name) + "</td>")
+        output.append("</tr>")
+    output.append("</table>")
+
+
+    # output matches
+    output.append("<h1>Matches</h1>")
+
+    output.append("<table>")
+    output.append("<tr>")
+    output.append("<th>Player 1</th>")
+    output.append("<th>Points 1</th>")
+    output.append("<th>Points 2</th>")
+    output.append("<th>Player 2</th>")
+    output.append("<th>Aufschlag</th>")
+    output.append("<th>Süd</th>")
+    output.append("<th>Zeit</th>")
+    output.append("</tr>")
+
+    for m in data["matches"]:
+        output.append("<tr>")
+        output.append("<td>" + str(player[str(m.playerid1)]) + "</td>")
+        output.append("<td>" + str(m.points1) + "</td>")
+        output.append("<td>" + str(m.points2) + "</td>")
+        output.append("<td>" + str(player[str(m.playerid2)]) + "</td>")
+        output.append("<td>" + str(m.serveplayer1) + "</td>")
+        output.append("<td>" + str(m.southplayer1) + "</td>")
+        output.append("<td>" + str(m.time) + "</td>")
+        output.append("</tr>")
+    output.append("</table>")
+
+    # generate response
+    output_len = sum(len(line) for line in output)
+    start_response('200 OK', [('Content-type', 'text/html'),
+                              ('Content-Length', str(output_len))])
+
+    return output
+
+
+
+
+
+if __name__ == '__main__':
+    # wsgi interface using the python simple http server
+    from wsgiref.simple_server import make_server
+    srv = make_server('localhost', 8080, application)
+    srv.serve_forever()
+
+    # cli interface
+#    obj = TTST()
+#    obj.cli()
+
+
+
+
+
+
+
+
+
+
+
+
