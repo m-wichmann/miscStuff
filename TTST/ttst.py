@@ -28,8 +28,6 @@ class TTST(object):
 
 
     def cli(self):
-#        self.data = self.loadData("./data.json")
-
         self.exit = False
         while (self.exit == False):
 
@@ -103,7 +101,6 @@ class TTST(object):
             self.data["matches"].append(match)
     
 
-    # TODO: make this more dynamic
     def dataToJSON(self, data):
         JSONdata = {"player": [], "matches": []}
         for entry in data["player"]:
@@ -128,7 +125,7 @@ class TTST(object):
     def saveData(self, data, filename):
         fh = open(filename, "wb")
         temp = self.dataToJSON(data)
-        json.dump(temp, fh)
+        json.dump(temp, fh, indent=4)
         fh.close()
 
 
@@ -142,10 +139,6 @@ class TTST(object):
             return {"player": [], "matches": []}
 
 
-
-
-
-
 def application(environ, start_response):
 
     # HTML output var
@@ -155,6 +148,8 @@ def application(environ, start_response):
     obj = TTST()
 
     # evaluate POST data
+    # TODO: make this into wsgi called methods
+    # TODO: this should be threadsafe...
     if environ['REQUEST_METHOD'] == 'POST':
         # read raw data
         rawpostdata = environ['wsgi.input'].read(int(environ["CONTENT_LENGTH"]))
@@ -178,93 +173,32 @@ def application(environ, start_response):
         # save changed data
         obj.saveData(obj.data, "./data.json")
 
-    # output player
-    output.append("<h1>Player</h1>")
-
-    output.append("<table>")
-    output.append("<tr>")
-    output.append("<th>ID</th>")
-    output.append("<th>Name</th>")
-    output.append("</tr>")
-
+    # generate output using the template and data
+    fh = open('template.html','r')
     player = {}
-    for p in obj.data["player"]:
-        # store player in dict for later use
-        player[str(p.pid)] = p.name
-        output.append("<tr>")
-        output.append("<td>" + str(p.pid) + "</td>")
-        output.append("<td>" + str(p.name) + "</td>")
-        output.append("</tr>")
-    output.append("</table>")
-
-
-    # output matches
-    output.append("<h1>Matches</h1>")
-
-    output.append("<table>")
-    output.append("<tr>")
-    output.append("<th>Player 1</th>")
-    output.append("<th>Points 1</th>")
-    output.append("<th>Points 2</th>")
-    output.append("<th>Player 2</th>")
-    output.append("<th>Aufschlag</th>")
-    output.append("<th>Süd</th>")
-    output.append("<th>Zeit</th>")
-    output.append("</tr>")
-
-    for m in obj.data["matches"]:
-        output.append("<tr>")
-        output.append("<td>" + str(player[str(m.playerid1)]) + "</td>")
-        output.append("<td>" + str(m.points1) + "</td>")
-        output.append("<td>" + str(m.points2) + "</td>")
-        output.append("<td>" + str(player[str(m.playerid2)]) + "</td>")
-        output.append("<td>" + str(m.serveplayer1) + "</td>")
-        output.append("<td>" + str(m.southplayer1) + "</td>")
-        output.append("<td>" + str(m.time) + "</td>")
-        output.append("</tr>")
-    output.append("</table>")
-
-    output.append("<hr>")
-
-    # add new player
-    output.append("<h1>Add new player</h1>")
-
-    output.append('<form method="post">')
-    output.append('<p>Name:<input type="text" name="newplayername"></p>')
-    output.append('<br><input value="Add new player" type="submit">')
-    output.append('</form>')
-
-    # add new matches
-    output.append("<h1>Add new match</h1>")
-    output.append('<form method="post">')
-
-    output.append("<table>")
-    output.append("<tr>")
-    output.append("<th>Player 1</th>")
-    output.append("<th></th>")
-    output.append("<th></th>")
-    output.append("<th>Player 2</th>")
-    output.append("<th>Aufschlag</th>")
-    output.append("<th>S&uuml;d</th>")
-    output.append("<th>TT</th>")
-    output.append("<th>MM</th>")
-    output.append("<th>JJJJ</th>")
-    output.append("</tr>")
-    output.append("<tr>")
-    output.append("<td>" + '<input type="text" name="player1">' + "</td>")
-    output.append("<td>" + '<input type="text" name="points1" size="2" maxlength="2">' + "</td>")
-    output.append("<td>" + '<input type="text" name="points2" size="2" maxlength="2">' + "</td>")
-    output.append("<td>" + '<input type="text" name="player2">' + "</td>")
-    output.append("<td>" + '<select name="serve" size="2"><option>Player 1</option><option>Player 2</option></select>' + "</td>")
-    output.append("<td>" + '<select name="south" size="2"><option>Player 1</option><option>Player 2</option></select>' + "</td>")
-    output.append("<td>" + '<input name="day" type="text" size="2" maxlength="2">' + "</td>")
-    output.append("<td>" + '<input name="month" type="text" size="2" maxlength="2">' + "</td>")
-    output.append("<td>" + '<input name="year" type="text" size="4" maxlength="4">' + "</td>")
-    output.append("</tr>")
-    output.append("</table>")
-
-    output.append('<br><input value="Add new match" type="submit">')
-    output.append('</form>')
+    # go through template and find magic comments
+    for line in fh:
+        if line.find("#####INSERT_PLAYER#####") != -1:
+            for p in obj.data["player"]:
+                # store player in dict for later use
+                player[str(p.pid)] = p.name
+                output.append("<tr>")
+                output.append("<td>" + str(p.pid) + "</td>")
+                output.append("<td>" + str(p.name) + "</td>")
+                output.append("</tr>")
+        elif line.find("#####INSERT_MATCHES#####") != -1:
+            for m in obj.data["matches"]:
+                output.append("<tr>")
+                output.append("<td>" + str(player[str(m.playerid1)]) + "</td>")
+                output.append("<td>" + str(m.points1) + "</td>")
+                output.append("<td>" + str(m.points2) + "</td>")
+                output.append("<td>" + str(player[str(m.playerid2)]) + "</td>")
+                output.append("<td>" + str(m.serveplayer1) + "</td>")
+                output.append("<td>" + str(m.southplayer1) + "</td>")
+                output.append("<td>" + str(m.time) + "</td>")
+                output.append("</tr>")
+        else:
+            output.append(line)
 
     # generate response
     output_len = sum(len(line) for line in output)
@@ -274,27 +208,16 @@ def application(environ, start_response):
     return output
 
 
-
-
-
 if __name__ == '__main__':
     # wsgi interface using the python simple http server
     from wsgiref.simple_server import make_server
     srv = make_server('localhost', 8080, application)
+
+    print "Serving:"
+    print "Press \"CTRL+c\" to exit."
+
     srv.serve_forever()
 
     # cli interface
 #    obj = TTST()
 #    obj.cli()
-
-
-
-
-
-
-
-
-
-
-
-
