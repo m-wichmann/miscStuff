@@ -147,6 +147,13 @@ def application(environ, start_response):
     # create main obj and load data
     obj = TTST()
 
+#    output.append("<pre>")
+#    for e in environ:
+#        output.append(str(e) + "=" + str(environ[e]) + "\n")
+#    output.append("</pre>")
+
+
+#############################################
     # evaluate POST data
     # TODO: make this into wsgi called methods
     # TODO: this should be threadsafe...
@@ -167,11 +174,14 @@ def application(environ, start_response):
 
         if len(postdata) == 9:
             # TODO: calc date and find player ids
+            # TODO: parse the arguments like they should be
             date = postdata["day"] + "-" + postdata["month"] + "-" + postdata["year"]
-            obj.addPlayer(postdata["player1"], postdata["player2"], postdata["points1"], postdata["points2"], postdata["serve"], postdata["south"], date)
+            obj.addMatch(postdata["player1"], postdata["player2"], postdata["points1"], postdata["points2"], postdata["serve"], postdata["south"], date)
 
         # save changed data
         obj.saveData(obj.data, "./data.json")
+#############################################
+
 
     # generate output using the template and data
     fh = open('template.html','r')
@@ -200,6 +210,7 @@ def application(environ, start_response):
         else:
             output.append(line)
 
+
     # generate response
     output_len = sum(len(line) for line in output)
     start_response('200 OK', [('Content-type', 'text/html'),
@@ -211,9 +222,12 @@ def application(environ, start_response):
 if __name__ == '__main__':
     # wsgi interface using the python simple http server
     from wsgiref.simple_server import make_server
-    srv = make_server('localhost', 8080, application)
+    ip = 'localhost'
+    port = 8080
+    func = application
+    srv = make_server(ip, port, func)
 
-    print "Serving:"
+    print "Serving at " + str(ip) + ":" + str(port)
     print "Press \"CTRL+c\" to exit."
 
     srv.serve_forever()
