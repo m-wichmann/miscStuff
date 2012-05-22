@@ -46,7 +46,11 @@ def wcc(path):
             # iterate through file and sum up lines
             for line in fd:
                 temp = line.split()
-                summe = summe + int(temp[1])
+                if len(temp) == 2:
+                    try:
+                        summe = summe + int(temp[1])
+                    except ValueError:
+                        print "[WARNING] found weird line. skipped it."
             fd.close()
             completesum = completesum + summe
             print "sum in file: " + infile + ": " + str(summe)
