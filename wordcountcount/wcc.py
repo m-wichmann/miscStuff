@@ -53,15 +53,15 @@ def wcc(path):
                         print "[WARNING] found weird line. skipped it."
             fd.close()
             completesum = completesum + summe
-            print "sum in file: " + infile + ": " + str(summe)
+            print "sum in file: " + infile.rjust(16) + ": " + str(summe).rjust(8)
         except IOError:
             print "[ERROR] Could not open file"
             print "[ERROR] This should not have happend -.-"
             sys.exit(-1)
             
     # output result
-    print "====="
-    print "sum of all files: " + str(completesum)
+    print "======================================="
+    print "sum of all files: " + str(completesum).rjust(21)
 
 
 if __name__ == '__main__':
