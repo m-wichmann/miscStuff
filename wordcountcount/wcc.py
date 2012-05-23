@@ -45,7 +45,7 @@ def wcc(path):
             summe = 0
             # iterate through file and sum up lines
             for line in fd:
-                temp = line.split()
+                temp = line.split(",")
                 if len(temp) == 2:
                     try:
                         summe = summe + int(temp[1])
