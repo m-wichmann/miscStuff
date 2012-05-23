@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #####
-#wordcountcount
+#calctimediv
 #
 #Copyright 2012, erebos42 (https://github.com/erebos42/miscScripts)
 #
