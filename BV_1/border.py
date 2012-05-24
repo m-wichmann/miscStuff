@@ -39,8 +39,7 @@ def checkstop(frame, frameout):
             # don't rely on a single point, so test some more points at the left and right
             if frame[y,x - 40] == 255 and frame[y,x - 20] == 255 and frame[y,x + 20] == 255 and frame[y,x + 40] == 255:
                 cv.Line(frameout, (x - 40,y), (x + 40,y), cv.CV_RGB(255, 0, 0), thickness=4)
-                stop.append[(x,y)]
-#                break
+                stop.append((x,y))
 
     # TODO: analyse the stop data
 
@@ -52,7 +51,6 @@ def checkstop(frame, frameout):
 
 
 
-# TODO: this is copy paste... adjust for left border
 def checkborderleft(frame, frameout):
     """check left border"""
     border = []
@@ -80,7 +78,7 @@ def checkborderleft(frame, frameout):
 
 
 
-    # TODO: check if right border values are left turn or what?!
+    # TODO: check if left border values are left turn or what?!
     result = 0
 
     if result > 1:
