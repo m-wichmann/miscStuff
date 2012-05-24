@@ -1,0 +1,6 @@
+==========
+coin_count
+=====
+this matlab script detects coins in a picture
+
+it is optimized for a specific picture and probably will never detect coins in other pictures ;-)
