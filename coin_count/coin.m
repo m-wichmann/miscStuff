@@ -25,7 +25,7 @@ clf;
 %%
 colormap('Gray');
 
-% NOTIZ: Bild wurde von Hand verändert, sodass zwei Münzen auch als
+% NOTIZ: Bild wurde von Hand veraendert, sodass zwei Muenzen auch als
 % verschiedene erkannt werden!
 Irgb=imread('IMAG0092_improved.jpg');
 
@@ -55,6 +55,7 @@ title('3. erode');
 %%
 
 % finde kanten per canny filter
+% TODO: sollte vielleicht durch ein einfaches 2-Pegel-Bild ersetzt werden
 Itemp=edge(Itemp,'canny',0.03);
 
 subplot(2,4,4);
@@ -77,16 +78,16 @@ subplot(2,4,6);
 % Suche im Bild Objekte
 L=bwlabel(Itemp);
 
-% Färbe die gefundenen Objekte zufällig ein
+% Faerbe die gefundenen Objekte zufaellig ein
 col=label2rgb(L,'jet','w','shuffle');
 
 imagesc(col); 
 title('6. bwlabel');
 
 %%
-% TODO: Das Attribut sollte frei wählbar sein...
+% TODO: Das Attribut sollte frei waehlbar sein...
 
-% hole alle benötigten Attribute zu den Objekten
+% hole alle benoetigten Attribute zu den Objekten
 props=regionprops(L,'Area','Centroid','Perimeter','MajorAxisLength');
 
 % schreibe die einzelnen Attribute in ein Vektor um einfacherer arbeiten zu
@@ -96,11 +97,11 @@ axis=[props.MajorAxisLength];
 cent=[props.Centroid];
 perm=[props.Perimeter];
 
-% Beide props könnten verwendet werden. Ich brauch aber erstmal nur eins...
-ObjArea=find(area > 10000); % Münzen-Größe anscheinend über 60000
-ObjAxis=find(axis > 100); % Münzen-Axis-Lenght anscheinend etwa 300 bis 900
+% Beide props koennten verwendet werden. Ich brauch aber erstmal nur eins...
+ObjArea=find(area > 10000); % Muenzen-Groeße anscheinend ueber 60000
+ObjAxis=find(axis > 100); % Muenzen-Axis-Lenght anscheinend etwa 300 bis 900
 
-% Wähle nur Objekte aus, die auch den Kriterien entsprechen
+% Waehle nur Objekte aus, die auch den Kriterien entsprechen
 mask=ismember(L, ObjArea);
 
 subplot(2,4,7);
@@ -111,7 +112,7 @@ title('7. ismember');
 
 %%
 % TODO: hier sollte keine referenz auf area() sein, damit man das attribut
-% im Schritt vorher frei wählen kann...
+% im Schritt vorher frei waehlen kann...
 
 subplot(2,4,8);
 imagesc(mask);
@@ -123,9 +124,9 @@ summe = 0;
 for i = ObjArea
     [r, c] = find(L==i);
     
-    % Ermittelte Werte für Münzen: 
+    % Ermittelte Werte fuer Muenzen: 
     % 60746 68729 74255 85665 90274 97696 130403
-    % suche den text der in das bild für dieses Objekt geschrieben werden
+    % suche den text der in das bild fuer dieses Objekt geschrieben werden
     % soll
     if ((area(i) >= 55000) && (area(i) <= 65000))
         z = 1;
@@ -148,7 +149,7 @@ for i = ObjArea
     summe = summe + z;
     cointext = strcat(num2str(z), ' c');
     
-    % zeichne vorher ausgewählten text in bild an stelle des ersten
+    % zeichne vorher ausgewaehlten text in bild an stelle des ersten
     % gefundenen Pixels
     text(c(1),r(1),cointext,'Color',[1,1,1], 'BackgroundColor',[0,0,0], 'FontSize',12);
 end
