@@ -1,0 +1,5 @@
+==========
+cc_calc
+=====
+This tool tries to analyse python source code and determine the computational complexity
+
