@@ -15,93 +15,165 @@ import json
 import re
 import urllib
 import urllib2
+from optparse import OptionParser
 
-
+# Threshhold values for the output colors
 THRESH_ABOVE0 = 0
 THRESH_ABOVE2 = 10
 THRESH_ABOVE5 = 100
 THRESH_ABOVE10 = 1000
 
 
-
 def pyplag():
     """main function"""
-    data = checkforplag_newalgo('data/sample_data_1')
-    outputtohtml('out/out.html', data)
+
+    # command line parsing
+    parser = OptionParser()
+    parser.add_option("-s", "--sentence", action="store_true", dest="sentence", help="use sentence detection, only one of s,p and u can be used!")
+    parser.add_option("-p", "--paragraph", action="store_true", dest="paragraph", help="use paragraph detection, only one of s,p and u can be used!")
+    parser.add_option("-u", "--uppercase", action="store_true", dest="uppercase", help="use upper case detection, only one of s,p and u can be used!")
+    parser.add_option("-o", "--outputfile", dest="outputfile", help="output file")
+    parser.add_option("-i", "--inputfile", dest="inputfile", help="input file")
+
+    (options, args) = parser.parse_args()
+
+    # check if files are specified
+    if (not options.inputfile) or (not options.outputfile):
+        parser.error('input or output file not specified')
+
+    # check if exactly one algortihm is specified.
+    # TODO: I'm sure this can be done with an xor -.-
+    temp = 0
+    if options.sentence:
+        temp = temp + 1
+    if options.paragraph:
+        temp = temp + 1
+    if options.uppercase:
+        temp = temp + 1
+    if temp != 1:
+        parser.error('please specify exactly one algorithm (s,p or u)')
+
+    # assign vars and start checking...
+    if options.inputfile:
+        inputfile = options.inputfile
+        print "Inputfile: " + str(inputfile)
+    if options.outputfile:
+        outputfile = options.outputfile
+        print "Outputfile: " + str(outputfile)
+    if options.sentence:
+        print "Algorithm: Sentence"
+        data = checkforplag_sentence(inputfile)
+        outputtohtml(outputfile, data)
+    elif options.paragraph:
+        print "Algorithm: Paragraph"
+        data = checkforplag_paragraph(inputfile)
+        outputtohtml(outputfile, data)
+    elif options.uppercase:
+        print "Algorithm: Uppercase"
+        data = checkforplag_uppercase(inputfile)
+        outputtohtml(outputfile, data)
 
 
-
-
-def checkforplag(path):
-    """check file at path if it is a plag"""
-    # open file with data under test
-    fd = open(path, 'r')
-
+def checkforplag_sentence(path):
+    """check fo plagiarism by checking every sentence"""
     data = []
 
-    # go through all lines in file
-    for line in fd:
-        # check if line starts with # to check for comments
-        # this is used to quickly alter the testdata
-        if line[0] == '#':
-            print "comment"
-            continue
-
-        # tokenize line
-        tokens = line.split()
-        # if line is long enough check for plag
-        if len(tokens) > 10:
-            # search every segement of line
-            for i in xrange(0,len(tokens) - 5):
-                segment = ' '.join(tokens[i:i+6])
-#                print "[" + str(altgooglesearch(segment)).rjust(15) + "] " + segment
-                data.append({"word": tokens[i],"count": altgooglesearch(segment)})
-    fd.close()
-    return data
-
-
-
-
-
-def checkforplag_newalgo(path):
-
-    data = []
-
     fd = open(path, 'r')
-
-    # plan:
-    # - split text into paragraph
-    # - split paragraphs into sentences
-    # - check sentences for significant parts
-    # - pack everything into a nice data package with rating values for every word
 
     # TODO: Assumption: every line is a paragraph
     # This is not true if copy-pasted from a pdf file?!
     for line in fd:
 
-        # filter short lines like newlines and titles
+        # filter comments and short lines like newlines and titles
         if len(line) < 5 or line[0] == '#':
             continue
-
-        print line
 
         # split line into sentences if it ends with .!?
         # TODO: a sentece should only start with a capital letter! Otherwise abbreviations like e.g. are also recognized
         sentences = re.split(r'\s*[!?.]\s*', line)
-        
+
         for sentence in sentences:
-            count = altgooglesearch(sentence.replace("\n",""))
-            data.append({"word": sentence,"count": count})
+            # clean and split sentences
+            cleansentence = sentence.replace(",", "")
+            cleansentence = cleansentence.replace(":", "")
+            cleansentence = cleansentence.replace("\n", "")
 
-
-
+            count = googlesearch(cleansentence)
+            data.append({"word": cleansentence,"count": count})
 
     fd.close()
     return data
 
 
+def checkforplag_paragraph(path):
+    """detect plagiarism by checking every paragraph/line"""
+    data = []
+
+    fd = open(path, 'r')
+
+    # TODO: Assumption: every line is a paragraph
+    # This is not true if copy-pasted from a pdf file?!
+    for line in fd:
+
+        # filter comments and short lines like newlines and titles
+        if len(line) < 5 or line[0] == '#':
+            continue
+        else:
+            count = googlesearch(line)
+            data.append({"word": line,"count": count})
+
+    fd.close()
+    return data
 
 
+def checkforplag_uppercase(path):
+    """check for plagiarism with an 'inteligent' algorithm that detects upper case words"""
+    data = []
+
+    fd = open(path, 'r')
+
+    # TODO: Assumption: every line is a paragraph
+    # This is not true if copy-pasted from a pdf file?!
+    for line in fd:
+
+        # filter comments and short lines like newlines and titles
+        if len(line) < 5 or line[0] == '#':
+            continue
+
+        # split line into sentences if it ends with .!?
+        # TODO: a sentece should only start with a capital letter! Otherwise abbreviations like e.g. are also recognized
+        sentences = re.split(r'\s*[!?.]\s*', line)
+
+        for sentence in sentences:
+            # clean and split sentences
+            cleansentence = sentence.replace(",", "")
+            cleansentence = cleansentence.replace(":", "")
+            cleansentence = cleansentence.replace("\n", "")
+            words = cleansentence.split(" ")
+
+
+
+            # go through the words and search for significant parts
+            for i, word in enumerate(words):
+                # if word is long enough. To avoid empty strings and maybe other things
+                if len(word) < 3:
+                    data.append({"word": words[i],"count": -1})
+                    continue
+                # if word starts with an upper case character
+                if word[0].isupper():
+                    # TODO: adjust range to get good results
+                    searchfor = ""
+                    for j in xrange(-2,3):
+                        try:
+                            searchfor = searchfor + " " + str(words[i+j])
+                        except IndexError:
+                            pass
+                    count = googlesearch(searchfor)
+                    data.append({"word": words[i],"count": count})
+                else:
+                    data.append({"word": words[i],"count": -1})
+    fd.close()
+    return data
 
 
 def outputtohtml(path, data):
@@ -132,52 +204,20 @@ def outputtohtml(path, data):
         elif entry["count"] > THRESH_ABOVE0 and entry["count"] <= THRESH_ABOVE2:
             spanclass = "0"
             fd.write('<span class="above' + spanclass + '">' + entry["word"] + '</span> ')
-        elif entry["count"] == 0:
-            fd.write(entry["word"] + ' ')
         else:
             fd.write(entry["word"] + ' ')
-
-
-
-#        if entry["count"] > 100000:
-#            color = "00"
-#        if entry["count"] > 10000:
-#            color = "30"
-#        if entry["count"] > 1000:
-#            color = "70"
-#        if entry["count"] > 100:
-#            color = "A0"
-#        if entry["count"] > 10:
-#            color = "D0"
-#        if entry["count"] == 0:
-#            color = "00"
-#        else:
-#            color = "FF"
-#        fd.write('<font color="#' + color + '0000">' + entry["word"] + '</font> ')
-
 
     fd.write("</body>")
     fd.write("</html>")
 
 
-
-
-def altgooglesearch(searchfor):
+def googlesearch(searchfor):
     """use http google site to search"""
-#    url = 'http://www.google.com/search?q=%22' + str(searchfor).replace(" ", "+") + "%22"
     url = 'http://www.google.com/search?q=%22' + urllib.quote(str(searchfor)) + '%22'
 
     # set user agent, so we won't get banned...
     headers = { 'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0' }
     request = urllib2.Request(url, None, headers)
-
-
-    # DEBUG
-#    print "for: " + str(searchfor)
-#    print "url: " + str(url)
-#    print "headers: " + str(headers)
-#    print "request: " + str(request.__dict__)
-
 
     # open url
     search_response = urllib2.urlopen(request)
@@ -193,39 +233,6 @@ def altgooglesearch(searchfor):
         else:
             numstring = search_results[temp1 + 20:temp2 - 1]
         return int(numstring.replace(".",""))
-    else:
-        return 0
-
-
-
-
-def googlesearch(searchfor):
-    """search using old (deprecated) google api. will ban after about 10 queries or so"""
-#    query = urllib.urlencode({'q': searchfor})
-    # build url
-#    url = 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&%s' % query
-#    print url
-
-    # build url
-    url = 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=' + str(searchfor).replace(" ", "+")
-
-    # set user agent, so we won't get banned...
-    headers = { 'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0' }
-    request = urllib2.Request(url, None, headers)
-
-    # open url
-    search_response = urllib2.urlopen(request)
-    # get result
-    search_results = search_response.read()
-    # decode json resultss
-    results = json.loads(search_results)
-    # get response data from json
-    data = results['responseData']
-
-    # return attribute of interest
-    # TODO: this seems to be a problem. Maybe because of unsolved captcha.
-    if data:
-        return data['cursor']['estimatedResultCount']
     else:
         return 0
 
