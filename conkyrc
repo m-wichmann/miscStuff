@@ -75,7 +75,7 @@ ${color1}SWAP ${color}$alignr$swap / $swapmax
 ${hr}
 ${font size:20}${color2}${alignr}GPU${font}${color}
 
-${color1}Temperature     :${color}  ${nvidia temp} °C
+${color1}Temperature     :${color} ${nvidia temp} °C
 ${color1}Frequency   GPU :${color}  ${nvidia gpufreq} MHz 
 ${color1}            MEM :${color} ${nvidia memfreq} MHz
 ${hr}
