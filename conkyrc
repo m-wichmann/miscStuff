@@ -51,21 +51,23 @@ format_human_readable       true        #
 short_units                 false       #
 temperature_unit            celsius     #
 
-cpu_avg_samples             2
-net_avg_samples             2
+cpu_avg_samples             3
+net_avg_samples             3
 
 use_spacer                  left        #
 
-default_color               eeeeee      # text
+default_color               dddddd      # text
 
 color0 a5de0c   # focus
-color1 888888   # h2
-color2 1ed0d7   # h1
+color1 999999   # h2
+color2 00bbf9   # h1
 
 # 4f8104 dark green
 # 6aa809 mid green
 # abcb10 light green
 # 2babac blue/cyan
+
+# 009bf9
 
 # ddaa00 dark yellow
 # 888888 grey
@@ -80,8 +82,8 @@ $alignr${time %A, %U %B %Y - %H:%M}
 ${hr}
 ${font size:20}${color2}${alignr}CPU${font}${color}
 
-${color1}CPU 0  ${color}${freq_g 1} GHz ${alignc}        ${color0}${cpu cpu0}%${color}${alignr}  ${freq_g 2} GHz  ${color1}CPU 1${color}
-${cpugraph cpu2 40,150 009bf9 ffffff 100}${offset 50}${cpugraph cpu1 40,150 009bf9 ffffff 100}
+${color1}CPU 0  ${color}${freq_g 1} GHz ${alignc}             ${color0}${cpu cpu0}%${color}${alignr}  ${freq_g 2} GHz  ${color1}CPU 1${color}
+${cpugraph cpu2 40,150 00bbf9 a5de0c 100}${offset 50}${cpugraph cpu1 40,150 00bbf9 a5de0c 100}
 ${color1}RAM ${color}$alignr$mem / $memmax
  ${color0}$memperc%${color}  $membar
 ${color1}SWAP ${color}$alignr$swap / $swapmax
@@ -89,7 +91,7 @@ ${color1}SWAP ${color}$alignr$swap / $swapmax
 ${hr}
 ${font size:20}${color2}${alignr}GPU${font}${color}
 
-${color1}Temperature     :${color} ${nvidia temp} °C
+${color1}Temperature     :${color}  ${nvidia temp} °C
 ${color1}Frequency   GPU :${color}  ${nvidia gpufreq} MHz 
 ${color1}            MEM :${color} ${nvidia memfreq} MHz
 ${hr}
@@ -115,7 +117,7 @@ $stippled_hr
 ${alignr}${color1}eth1:${color} ${addrs eth1}  
 
 ${color1}Down: ${color}${downspeed eth1}${alignr}${color1}Up: ${color}${upspeed  eth1}
-${downspeedgraph eth1 40,150 009bf9 ffffff}${offset 50}${upspeedgraph eth1 40,150 00bbff dddddd -l}
+${downspeedgraph eth1 40,150 00bbf9 a5de0c}${offset 50}${upspeedgraph eth1 40,150 00bbf9 a5de0c -l}
 ${color1}Total: ${color}${totaldown eth1}${alignr}${color1}Total: ${color}${totalup eth1}
 ${hr}
 ${font size:20}${color2}${alignr}LOAD${font}${color}
