@@ -34,11 +34,10 @@ minimum_size                350 5       #
 own_window                  true        #
 own_window_type             override    #
 own_window_colour           black       #
+own_window_transparent      true        #
 
 draw_borders                false       #
 draw_graph_borders          true        #
-
-default_color               dddddd       #
 
 # Droid Sans Mono, Latin Modern Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono
 font                        DejaVu Sans Mono:size=9
@@ -52,11 +51,26 @@ format_human_readable       true        #
 short_units                 false       #
 temperature_unit            celsius     #
 
+cpu_avg_samples             2
+net_avg_samples             2
+
 use_spacer                  left        #
 
-color0 ddaa00
-color1 888888
-color2 00bbff
+default_color               eeeeee      # text
+
+color0 a5de0c   # focus
+color1 888888   # h2
+color2 1ed0d7   # h1
+
+# 4f8104 dark green
+# 6aa809 mid green
+# abcb10 light green
+# 2babac blue/cyan
+
+# ddaa00 dark yellow
+# 888888 grey
+# 00bbff blue
+
 
 
 TEXT
