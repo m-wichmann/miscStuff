@@ -45,7 +45,7 @@ use_xft                     true        #
 
 double_buffer               true        #
 total_run_times             0           # run forever
-update_interval             0.1.5         #
+update_interval             1.5         #
 
 format_human_readable       true        #
 short_units                 false       #
