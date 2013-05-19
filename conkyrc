@@ -82,7 +82,7 @@ $alignr${time %A, %U %B %Y - %H:%M}
 ${hr}
 ${font size:20}${color2}${alignr}CPU${font}${color}
 
-${color1}CPU 0  ${color}${freq_g 1} GHz ${alignc}             ${color0}${cpu cpu0}%${color}${alignr}  ${freq_g 2} GHz  ${color1}CPU 1${color}
+${color1}CPU 0  ${color}${freq_g 1} GHz ${alignc}            ${color0}${cpu cpu0}%${color}${alignr}  ${freq_g 2} GHz  ${color1}CPU 1${color}
 ${cpugraph cpu2 40,150 00bbf9 a5de0c 100}${offset 50}${cpugraph cpu1 40,150 00bbf9 a5de0c 100}
 ${color1}RAM ${color}$alignr$mem / $memmax
  ${color0}$memperc%${color}  $membar
@@ -112,9 +112,7 @@ ${color1}/media/data4/${color} ${alignr}${fs_used /media/data4} / ${fs_size /med
 ${hr}
 ${font size:20}${color2}${alignr}ETH${font}${color}
 
-${alignr}${color1}Gateway:${color} ${gw_ip} 
-$stippled_hr
-${alignr}${color1}eth1:${color} ${addrs eth1}  
+${color1}Gateway:${color} ${gw_ip} ${alignr}${color1}eth1:${color} ${addrs eth1}
 
 ${color1}Down: ${color}${downspeed eth1}${alignr}${color1}Up: ${color}${upspeed  eth1}
 ${downspeedgraph eth1 40,150 00bbf9 a5de0c}${offset 50}${upspeedgraph eth1 40,150 00bbf9 a5de0c -l}
