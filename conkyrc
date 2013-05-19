@@ -45,7 +45,7 @@ use_xft                     true        #
 
 double_buffer               true        #
 total_run_times             0           # run forever
-update_interval             1.5         #
+update_interval             0.1.5         #
 
 format_human_readable       true        #
 short_units                 false       #
@@ -115,7 +115,7 @@ ${font size:20}${color2}${alignr}ETH${font}${color}
 ${color1}Gateway:${color} ${gw_ip} ${alignr}${color1}eth1:${color} ${addrs eth1}
 
 ${color1}Down: ${color}${downspeed eth1}${alignr}${color1}Up: ${color}${upspeed  eth1}
-${downspeedgraph eth1 40,150 00bbf9 a5de0c}${offset 50}${upspeedgraph eth1 40,150 00bbf9 a5de0c -l}
+${downspeedgraph eth1 40,150 00bbf9 a5de0c 10000}${offset 50}${upspeedgraph eth1 40,150 00bbf9 a5de0c 10000}
 ${color1}Total: ${color}${totaldown eth1}${alignr}${color1}Total: ${color}${totalup eth1}
 ${hr}
 ${font size:20}${color2}${alignr}LOAD${font}${color}
