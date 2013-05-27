@@ -85,9 +85,9 @@ ${font size:20}${color2}${alignr}CPU${font}${color}
 ${color1}CPU 0  ${color}${freq_g 1} GHz ${alignc}            ${color0}${cpu cpu0}%${color}${alignr}  ${freq_g 2} GHz  ${color1}CPU 1${color}
 ${cpugraph cpu2 40,150 00bbf9 a5de0c 100}${offset 50}${cpugraph cpu1 40,150 00bbf9 a5de0c 100}
 ${color1}RAM ${color}$alignr$mem / $memmax
- ${color0}$memperc%${color}  $membar
+ ${color0}$memperc%${goto 40}${color}$membar
 ${color1}SWAP ${color}$alignr$swap / $swapmax
-  ${color0}$swapperc%${color}  $swapbar
+  ${color0}$swapperc%${goto 40}${color}$swapbar
 ${hr}
 ${font size:20}${color2}${alignr}GPU${font}${color}
 
@@ -98,17 +98,17 @@ ${hr}
 ${font size:20}${color2}${alignr}HDD${font}${color}
 
 ${color1}/${color} ${alignr}${fs_used /} / ${fs_size /}
- ${color0}${fs_used_perc /}%${color}  ${fs_bar /}
+ ${color0}${fs_used_perc /}%${goto 40}${color}${fs_bar /}
 ${color1}/home/${color} ${alignr}${fs_used /home} / ${fs_size /home}
- ${color0}${fs_used_perc /home/}%${color}  ${fs_bar /home/}
+ ${color0}${fs_used_perc /home/}%${goto 40}${color}${fs_bar /home/}
 ${color1}/media/data1/${color} ${alignr}${fs_used /media/data1} / ${fs_size /media/data1}
- ${color0}${fs_used_perc /media/data1/}%${color}  ${fs_bar /media/data1/}
+ ${color0}${fs_used_perc /media/data1/}%${goto 40}${color}${fs_bar /media/data1/}
 ${color1}/media/data2/${color} ${alignr}${fs_used /media/data2} / ${fs_size /media/data2}
- ${color0}${fs_used_perc /media/data2/}%${color}  ${fs_bar /media/data2/}
+ ${color0}${fs_used_perc /media/data2/}%${goto 40}${color}${fs_bar /media/data2/}
 ${color1}/media/data3/${color} ${alignr}${fs_used /media/data3} / ${fs_size /media/data3}
- ${color0}${fs_used_perc /media/data3/}%${color}  ${fs_bar /media/data3/}
+ ${color0}${fs_used_perc /media/data3/}%${goto 40}${color}${fs_bar /media/data3/}
 ${color1}/media/data4/${color} ${alignr}${fs_used /media/data4} / ${fs_size /media/data4}
- ${color0}${fs_used_perc /media/data4/}%${color}  ${fs_bar /media/data4/}
+ ${color0}${fs_used_perc /media/data4/}%${goto 40}${color}${fs_bar /media/data4/}
 ${hr}
 ${font size:20}${color2}${alignr}ETH${font}${color}
 
