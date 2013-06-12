@@ -78,7 +78,7 @@ color2 00bbf9   # h1
 TEXT
 # alignc alignr color hr offset outlinecolor shadecolor tab
 ${font size:20}${color2}$nodename$font$color$alignr$sysname $kernel $machine
-$alignr${time %A, %U %B %Y - %H:%M}
+$alignr${time %A, %e %B %Y - %H:%M}
 ${hr}
 ${font size:20}${color2}${alignr}CPU${font}${color}
 
