@@ -1,0 +1,9 @@
+# Simple New Tab Page
+This is a simple Chromium Extension, that redirects the new tab page to a simple html file with some links.
+
+## Installation
+Open extensions dialog in Chromium -> Developermode -> Load from dir (or something like that)
+
+## License
+Released in public domain.
+
