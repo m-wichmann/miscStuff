@@ -1,1 +1,0 @@
-"""pySongbook src package"""

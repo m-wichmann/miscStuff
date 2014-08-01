@@ -1,1 +1,0 @@
-"""pyTetris src package"""
